@@ -17,21 +17,26 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 	return TRUE;
 }
 
-// rundll32 entry points
+// rundll32 entry points (according to KB164787)
 
-void SISPMLIB_API CALLBACK Toggle(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow) {
-    DWORD number = atoi(lpszCmdLine);
+void CALLBACK Toggle(HWND hwnd, HINSTANCE hinst, LPTSTR lpszCmdLine, int nCmdShow) {
+RUNDLL32EXPORT
+
+    DWORD number = _ttoi(lpszCmdLine);
     SisPmSocket socket = SisPmDevice::findDevices().front().socket(number);
     socket.turn(!socket.isOn());
 }
 
+void CALLBACK TurnOn(HWND hwnd, HINSTANCE hinst, LPTSTR lpszCmdLine, int nCmdShow) {
+RUNDLL32EXPORT
 
-void SISPMLIB_API CALLBACK TurnOn(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow) {
-    DWORD number = atoi(lpszCmdLine);
+    DWORD number = _ttoi(lpszCmdLine);
     SisPmDevice::findDevices().front().socket(number).turn(TRUE);
 }
 
-void SISPMLIB_API CALLBACK TurnOff(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow) {
-    DWORD number = atoi(lpszCmdLine);
+void CALLBACK TurnOff(HWND hwnd, HINSTANCE hinst, LPTSTR lpszCmdLine, int nCmdShow) {
+RUNDLL32EXPORT
+
+    DWORD number = _ttoi(lpszCmdLine);
     SisPmDevice::findDevices().front().socket(number).turn(FALSE);
 }

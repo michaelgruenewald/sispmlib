@@ -16,3 +16,9 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+#ifdef _UNICODE
+#define RUNDLL32EXPORT __pragma(comment(linker, "/EXPORT:" __FUNCTION__ "W=" __FUNCDNAME__))
+#else
+#define RUNDLL32EXPORT __pragma(comment(linker, "/EXPORT:" __FUNCTION__ "A=" __FUNCDNAME__))
+#endif
