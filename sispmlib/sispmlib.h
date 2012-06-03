@@ -13,7 +13,7 @@ class SISPMLIB_API SisPmSocket;
 class SISPMLIB_API SisPmDevice {
 public:
     SisPmDevice(const SisPmDevice& device);
-    SisPmDevice(LPCTSTR devicePath);
+    SisPmDevice(LPCTSTR devicePath, DWORD socketCount);
     ~SisPmDevice();
 
     DWORD serial();
@@ -36,6 +36,7 @@ private:
     };
 
     SisPmDeviceHandle *handle;
+    DWORD socketCount;
 
     friend class SisPmSocket;
 };

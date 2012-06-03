@@ -3,7 +3,17 @@
 
 using std::vector;
 
-#define HWID _T("HID\\VID_04B4&PID_FD13")
+struct deviceType {
+    LPCTSTR hardwareId;
+    DWORD socketCount;
+};
+
+const struct deviceType deviceTypes[] = {
+    {_T("HID\\VID_04B4&PID_FD11"), 4},
+    {_T("HID\\VID_04B4&PID_FD13"), 4},
+    {_T("HID\\VID_04B4&PID_FD10"), 1},
+    {_T("HID\\VID_04B4&PID_FD12"), 1},
+};
 
 vector<SisPmDevice> SisPmDevice::findDevices() {
     vector<SisPmDevice> result = vector<SisPmDevice>();
@@ -16,7 +26,7 @@ vector<SisPmDevice> SisPmDevice::findDevices() {
 
     SP_DEVINFO_DATA deviceInfoData;
     deviceInfoData.cbSize = sizeof(SP_DEVINFO_DATA);
-    for (int i=0; SetupDiEnumDeviceInfo(deviceInfoSet, i, &deviceInfoData); i++) {
+    for (int i = 0; SetupDiEnumDeviceInfo(deviceInfoSet, i, &deviceInfoData); i++) {
 
         DWORD propertySize = 0;
         DWORD propertyDataType;
@@ -25,14 +35,20 @@ vector<SisPmDevice> SisPmDevice::findDevices() {
         SetupDiGetDeviceRegistryProperty(deviceInfoSet, &deviceInfoData, SPDRP_HARDWAREID, &propertyDataType, propertyBuffer, propertySize, NULL);
         assert(propertyDataType == REG_MULTI_SZ);
 
+        const struct deviceType *deviceType = NULL;
         LPTSTR hardwareId = (LPTSTR)propertyBuffer;
-        while(_tcslen(hardwareId)) {
-            if(_tcslen(hardwareId) == _tcslen(HWID) && _tccmp(hardwareId, HWID) == 0)
-                break;
+        while(_tcslen(hardwareId) && !deviceType) {
+            for(int j = 0; j < sizeof(deviceTypes) / sizeof(struct deviceType); j++) {
+                if(_tcslen(hardwareId) == _tcslen(deviceTypes[j].hardwareId) && _tccmp(hardwareId, deviceTypes[j].hardwareId) == 0)
+                    deviceType = &deviceTypes[j];
+                    break;
+            }
             hardwareId = _tcsninc(hardwareId, _tcslen(hardwareId)) + 1;
         }
 
-        if(_tcslen(hardwareId)) {
+        delete propertyBuffer;
+        
+        if(deviceType) {
             // get device interface
             SP_DEVICE_INTERFACE_DATA deviceInterfaceData;
             deviceInterfaceData.cbSize = sizeof deviceInterfaceData;
@@ -45,12 +61,10 @@ vector<SisPmDevice> SisPmDevice::findDevices() {
             detailledDataBuffer->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
             SetupDiGetDeviceInterfaceDetail(deviceInfoSet, &deviceInterfaceData, detailledDataBuffer, detailledDataSize, NULL, NULL);
 
-            result.push_back(SisPmDevice(detailledDataBuffer->DevicePath));
+            result.push_back(SisPmDevice(detailledDataBuffer->DevicePath, deviceType->socketCount));
 
             delete detailledDataBuffer;
         }
-
-        delete propertyBuffer;
     }
     SetupDiDestroyDeviceInfoList(deviceInfoSet);
 
@@ -78,8 +92,9 @@ SisPmDevice::SisPmDevice(const SisPmDevice& device) {
     this->handle->AddRef();
 }
 
-SisPmDevice::SisPmDevice(LPCTSTR devicePath) {
+SisPmDevice::SisPmDevice(LPCTSTR devicePath, DWORD socketCount) {
     this->handle = new SisPmDeviceHandle(CreateFile(devicePath, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL));
+    this->socketCount = socketCount;
 }
 
 SisPmDevice::~SisPmDevice() {
@@ -103,7 +118,7 @@ SisPmSocket::SisPmSocket(const SisPmSocket& socket) {
 }
 
 SisPmSocket::SisPmSocket(SisPmDevice device, DWORD number) {
-    if(number<1||number>4) {
+    if(number<1||number>device.socketCount) {
         throw;
     }
     this->handle = device.handle;
