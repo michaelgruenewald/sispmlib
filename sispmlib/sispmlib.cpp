@@ -3,6 +3,8 @@
 
 using std::vector;
 
+#define HWID _T("HID\\VID_04B4&PID_FD13")
+
 vector<SisPmDevice> SisPmDevice::findDevices() {
     vector<SisPmDevice> result = vector<SisPmDevice>();
 
@@ -17,11 +19,20 @@ vector<SisPmDevice> SisPmDevice::findDevices() {
     for (int i=0; SetupDiEnumDeviceInfo(deviceInfoSet, i, &deviceInfoData); i++) {
 
         DWORD propertySize = 0;
+        DWORD propertyDataType;
         SetupDiGetDeviceRegistryProperty(deviceInfoSet, &deviceInfoData, SPDRP_HARDWAREID, NULL, NULL, NULL, &propertySize);
         PBYTE propertyBuffer = new BYTE[propertySize];
-        SetupDiGetDeviceRegistryProperty(deviceInfoSet, &deviceInfoData, SPDRP_HARDWAREID, NULL, propertyBuffer, propertySize, NULL);
+        SetupDiGetDeviceRegistryProperty(deviceInfoSet, &deviceInfoData, SPDRP_HARDWAREID, &propertyDataType, propertyBuffer, propertySize, NULL);
+        assert(propertyDataType == REG_MULTI_SZ);
 
-        if(wcsncmp((LPWSTR)propertyBuffer, L"HID\\VID_04B4&PID_FD13", 21) == 0) { // FIXME
+        LPTSTR hardwareId = (LPTSTR)propertyBuffer;
+        while(_tcslen(hardwareId)) {
+            if(_tcslen(hardwareId) == _tcslen(HWID) && _tccmp(hardwareId, HWID) == 0)
+                break;
+            hardwareId = _tcsninc(hardwareId, _tcslen(hardwareId)) + 1;
+        }
+
+        if(_tcslen(hardwareId)) {
             // get device interface
             SP_DEVICE_INTERFACE_DATA deviceInterfaceData;
             deviceInterfaceData.cbSize = sizeof deviceInterfaceData;

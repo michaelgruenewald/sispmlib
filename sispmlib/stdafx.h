@@ -5,7 +5,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#include <string.h>
+#include <tchar.h>
+#include <assert.h>
 
 #ifdef __cplusplus
 extern "C" {
