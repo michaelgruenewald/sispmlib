@@ -15,6 +15,9 @@ const struct deviceType deviceTypes[] = {
     {_T("HID\\VID_04B4&PID_FD12"), 1},
 };
 
+#define STATE_SET 1
+#define STATE_GET 2
+
 vector<SisPmDevice> SisPmDevice::findDevices() {
     vector<SisPmDevice> result = vector<SisPmDevice>();
 
@@ -133,16 +136,16 @@ SisPmSocket::~SisPmSocket() {
 BOOL SisPmSocket::isOn() {
     BYTE feature[2] = {(BYTE)this->number * 3, 0};
     HidD_GetFeature(this->handle->hDevice, &feature, sizeof feature);
-    return feature[1] & 0x03;
+    return feature[1] & STATE_GET;
 }
 
 void SisPmSocket::turn(BOOL on) {
     BYTE feature[2] = {(BYTE)this->number * 3, 0};
     HidD_GetFeature(this->handle->hDevice, &feature, sizeof feature);
     if(on) {
-        feature[1] |= 1;
+        feature[1] |= STATE_SET;
     } else {
-        feature[1] &= ~1;
+        feature[1] &= ~STATE_SET;
     }
     HidD_SetFeature(this->handle->hDevice, &feature, sizeof feature);
 }
