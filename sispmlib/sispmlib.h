@@ -8,18 +8,50 @@ using std::vector;
 #define SISPMLIB_API __declspec(dllimport)
 #endif
 
-class SISPMLIB_API SisPmDevice {
-private:
-    HANDLE hDevice;
+class SISPMLIB_API SisPmSocket;
 
+class SISPMLIB_API SisPmDevice {
 public:
-    SisPmDevice(LPTSTR devicePath);
+    SisPmDevice(const SisPmDevice& device);
+    SisPmDevice(LPCTSTR devicePath);
     ~SisPmDevice();
 
     DWORD serial();
+    SisPmSocket socket(DWORD number);
 
-    BOOL isOn(DWORD socket);
-    void turn(DWORD socket, BOOL on);
+    static vector<SisPmDevice> findDevices();
 
-    static vector<SisPmDevice*> findDevices();
+private:
+    class SisPmDeviceHandle {
+    public:
+        HANDLE hDevice;
+        DWORD references;
+
+        SisPmDeviceHandle(HANDLE hDevice);
+        
+        void AddRef();
+        void Release();
+
+        friend class SisPmSocket;
+    };
+
+    SisPmDeviceHandle *handle;
+
+    friend class SisPmSocket;
+};
+
+class SISPMLIB_API SisPmSocket {
+public:
+    SisPmSocket(const SisPmSocket& socket);
+    SisPmSocket(SisPmDevice device, DWORD number);
+    ~SisPmSocket();
+
+    BOOL isOn();
+    void turn(BOOL on);
+
+private:
+    DWORD number;
+    SisPmDevice::SisPmDeviceHandle *handle;
+
+    friend class SisPmDevice;
 };

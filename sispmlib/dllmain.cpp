@@ -19,14 +19,19 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 
 // rundll32 entry points
 
+void SISPMLIB_API CALLBACK Toggle(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow) {
+    DWORD number = atoi(lpszCmdLine);
+    SisPmSocket socket = SisPmDevice::findDevices().front().socket(number);
+    socket.turn(!socket.isOn());
+}
+
+
 void SISPMLIB_API CALLBACK TurnOn(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow) {
-    SisPmDevice* dev = SisPmDevice::findDevices().front();
-    DWORD socket = atoi(lpszCmdLine);
-    dev->turn(socket, TRUE);
+    DWORD number = atoi(lpszCmdLine);
+    SisPmDevice::findDevices().front().socket(number).turn(TRUE);
 }
 
 void SISPMLIB_API CALLBACK TurnOff(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow) {
-    SisPmDevice* dev = SisPmDevice::findDevices().front();
-    DWORD socket = atoi(lpszCmdLine);
-    dev->turn(socket, FALSE);
+    DWORD number = atoi(lpszCmdLine);
+    SisPmDevice::findDevices().front().socket(number).turn(FALSE);
 }
