@@ -15,11 +15,11 @@ class _SisPmDeviceHandle;
 class SISPMLIB_API SisPmDevice {
 public:
     SisPmDevice(const SisPmDevice& device);
-    SisPmDevice(LPCTSTR devicePath, DWORD socketCount);
+    SisPmDevice(LPCTSTR devicePath, unsigned int socketCount);
     ~SisPmDevice();
 
-    DWORD serial();
-    SisPmSocket socket(DWORD number);
+    unsigned long serial();
+    SisPmSocket socket(unsigned int number);
 
     static vector<SisPmDevice> findDevices();
 
@@ -33,15 +33,15 @@ private:
 class SISPMLIB_API SisPmSocket {
 public:
     SisPmSocket(const SisPmSocket& socket);
-    SisPmSocket(SisPmDevice device, DWORD number);
+    SisPmSocket(SisPmDevice device, unsigned int number);
     ~SisPmSocket();
 
-    BOOL isActive();
-    BOOL isTurnedOn();
-    void turn(BOOL on);
+    bool isActive();
+    bool isTurnedOn();
+    void turn(bool on);
 
 private:
-    DWORD number;
+    unsigned int number;
     _SisPmDeviceHandle *handle;
 
     friend class SisPmDevice;

@@ -1,7 +1,7 @@
 class _SisPmDeviceHandle {
 public:
     HANDLE hDevice;
-    DWORD references;
+    unsigned int references;
 
     _SisPmDeviceHandle(HANDLE hDevice);
         
