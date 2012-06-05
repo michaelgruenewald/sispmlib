@@ -24,7 +24,7 @@ RUNDLL32EXPORT
 
     DWORD number = _ttoi(lpszCmdLine);
     SisPmSocket socket = SisPmDevice::findDevices().front().socket(number);
-    socket.turn(!socket.isOn());
+    socket.turn(!socket.isTurnedOn());
 }
 
 void CALLBACK TurnOn(HWND hwnd, HINSTANCE hinst, LPTSTR lpszCmdLine, int nCmdShow) {

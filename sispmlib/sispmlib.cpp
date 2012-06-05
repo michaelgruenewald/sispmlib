@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "sispmlib.h"
+#include "sispmlib_internal.h"
 
 using std::vector;
 
@@ -15,8 +16,8 @@ const struct deviceType deviceTypes[] = {
     {_T("HID\\VID_04B4&PID_FD12"), 1},
 };
 
-#define STATE_SET 1
-#define STATE_GET 2
+#define MASK_SWITCH 1
+#define MASK_SENSE 2
 
 vector<SisPmDevice> SisPmDevice::findDevices() {
     vector<SisPmDevice> result = vector<SisPmDevice>();
@@ -74,16 +75,16 @@ vector<SisPmDevice> SisPmDevice::findDevices() {
     return result;
 };
 
-SisPmDevice::SisPmDeviceHandle::SisPmDeviceHandle(HANDLE hDevice) {
+_SisPmDeviceHandle::_SisPmDeviceHandle(HANDLE hDevice) {
     this->hDevice = hDevice;
     this->references = 1;
 }
 
-void SisPmDevice::SisPmDeviceHandle::AddRef() {
+void _SisPmDeviceHandle::AddRef() {
     this->references++;
 }
 
-void SisPmDevice::SisPmDeviceHandle::Release() {
+void _SisPmDeviceHandle::Release() {
     this->references--;
     if(this->references == 0) {
         CloseHandle(this->hDevice);
@@ -96,7 +97,7 @@ SisPmDevice::SisPmDevice(const SisPmDevice& device) {
 }
 
 SisPmDevice::SisPmDevice(LPCTSTR devicePath, DWORD socketCount) {
-    this->handle = new SisPmDeviceHandle(CreateFile(devicePath, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL));
+    this->handle = new _SisPmDeviceHandle(CreateFile(devicePath, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL));
     this->socketCount = socketCount;
 }
 
@@ -133,19 +134,25 @@ SisPmSocket::~SisPmSocket() {
     this->handle->Release();
 }
 
-BOOL SisPmSocket::isOn() {
+BOOL SisPmSocket::isActive() {
     BYTE feature[2] = {(BYTE)this->number * 3, 0};
     HidD_GetFeature(this->handle->hDevice, &feature, sizeof feature);
-    return feature[1] & STATE_GET;
+    return feature[1] & MASK_SENSE;
+}
+
+BOOL SisPmSocket::isTurnedOn() {
+    BYTE feature[2] = {(BYTE)this->number * 3, 0};
+    HidD_GetFeature(this->handle->hDevice, &feature, sizeof feature);
+    return feature[1] & MASK_SWITCH;
 }
 
 void SisPmSocket::turn(BOOL on) {
     BYTE feature[2] = {(BYTE)this->number * 3, 0};
     HidD_GetFeature(this->handle->hDevice, &feature, sizeof feature);
     if(on) {
-        feature[1] |= STATE_SET;
+        feature[1] |= MASK_SWITCH;
     } else {
-        feature[1] &= ~STATE_SET;
+        feature[1] &= ~MASK_SWITCH;
     }
     HidD_SetFeature(this->handle->hDevice, &feature, sizeof feature);
 }
