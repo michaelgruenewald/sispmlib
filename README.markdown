@@ -24,9 +24,9 @@ Rundll32 API
 
 Examples:
 
-    rundll32 libsispm.dll,TurnOn 1
-    rundll32 libsispm.dll,TurnOff 3
-    rundll32 libsispm.dll,Toggle 4
+    rundll32 sispmlib.dll,TurnOn 1
+    rundll32 sispmlib.dll,TurnOff 3
+    rundll32 sispmlib.dll,Toggle 4
 
 License
 -------
