@@ -91,6 +91,7 @@ void _SisPmDeviceHandle::Release() {
 
 SisPmDevice::SisPmDevice(const SisPmDevice& device) {
     this->handle = device.handle;
+    this->socketCount = device.socketCount;
     this->handle->AddRef();
 }
 
