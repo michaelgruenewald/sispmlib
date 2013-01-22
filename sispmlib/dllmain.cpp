@@ -23,20 +23,44 @@ void CALLBACK Toggle(HWND hwnd, HINSTANCE hinst, LPTSTR lpszCmdLine, int nCmdSho
 RUNDLL32EXPORT
 
     DWORD number = _ttoi(lpszCmdLine);
-    SisPmSocket socket = SisPmDevice::findDevices().front().socket(number);
-    socket.turn(!socket.isTurnedOn());
+    try {
+        vector<SisPmDevice> devices = SisPmDevice::findDevices();
+        if(devices.empty()) {
+            return;
+        }
+        SisPmSocket socket = devices.front().socket(number);
+        socket.turn(!socket.isTurnedOn());
+    } catch(...) {
+        return;
+    }
 }
 
 void CALLBACK TurnOn(HWND hwnd, HINSTANCE hinst, LPTSTR lpszCmdLine, int nCmdShow) {
 RUNDLL32EXPORT
 
     DWORD number = _ttoi(lpszCmdLine);
-    SisPmDevice::findDevices().front().socket(number).turn(TRUE);
+    try {
+        vector<SisPmDevice> devices = SisPmDevice::findDevices();
+        if(devices.empty()) {
+            return;
+        }
+        devices.front().socket(number).turn(TRUE);
+    } catch(...) {
+        return;
+    }
 }
 
 void CALLBACK TurnOff(HWND hwnd, HINSTANCE hinst, LPTSTR lpszCmdLine, int nCmdShow) {
 RUNDLL32EXPORT
 
     DWORD number = _ttoi(lpszCmdLine);
-    SisPmDevice::findDevices().front().socket(number).turn(FALSE);
+    try {
+        vector<SisPmDevice> devices = SisPmDevice::findDevices();
+        if(devices.empty()) {
+            return;
+        }
+        devices.front().socket(number).turn(FALSE);
+    } catch(...) {
+        return;
+    }
 }
